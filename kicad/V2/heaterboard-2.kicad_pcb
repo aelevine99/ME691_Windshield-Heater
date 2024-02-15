@@ -1351,9 +1351,9 @@
   (via (at 153.035 72.39) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (net 31) (tstamp 830b3814-e495-437c-99c1-0c2213a9f3b7))
   (segment (start 160.655 80.995) (end 160.94 81.28) (width 0.25) (layer "F.Cu") (net 33) (tstamp 7f373ad8-2c02-41b3-9f93-72a155da71ea))
   (segment (start 160.655 70.485) (end 160.655 80.995) (width 0.25) (layer "F.Cu") (net 33) (tstamp 8c4ef1e9-f599-423d-add7-3565c2b9ba7b))
-  (segment (start 97.79 80.575) (end 99.06 81.845) (width 0.635) (layer "F.Cu") (net 35) (tstamp 3b4448ae-7901-4c47-9504-1e0d44fe37b5))
+  (segment (start 97.79 80.575) (end 99.06 81.845) (width 0.25) (layer "F.Cu") (net 35) (tstamp 0a72ef4c-0f70-4961-a07b-c2c31954d703))
   (segment (start 97.155 75.565) (end 97.79 75.565) (width 0.25) (layer "F.Cu") (net 35) (tstamp 5f66755b-51ad-46b0-bb93-ef84c640c880))
-  (segment (start 97.79 75.565) (end 97.79 80.575) (width 0.635) (layer "F.Cu") (net 35) (tstamp f11dd242-6d48-4a3e-8551-d3d44313eb8e))
+  (segment (start 97.79 75.565) (end 97.79 80.575) (width 0.25) (layer "F.Cu") (net 35) (tstamp a8c97213-2e27-455f-9631-69d226a2f396))
   (segment (start 93.98 72.39) (end 97.155 75.565) (width 0.25) (layer "F.Cu") (net 35) (tstamp fd9c6f9e-ba44-454d-bdf7-a08e0e82039b))
 
   (zone (net 27) (net_name "GND") (layer "In1.Cu") (tstamp 553fff14-cec6-4387-bfff-c9d29671e2e5) (hatch edge 0.5)
