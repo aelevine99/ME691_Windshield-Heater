@@ -1477,6 +1477,9 @@
   (gr_text "BOSTON UNIVERSITY ENG-ME-692\nWINDSHIELD HEATER PROJECT\nAL LEVINE & ZEWEI WU" (at 80.01 58.42) (layer "F.SilkS") (tstamp e20a3892-ffac-4e0d-a635-9f5209b9b354)
     (effects (font (size 1 1) (thickness 0.2) bold) (justify left top))
   )
+  (gr_text "JLCJLCJLCJLC" (at 80.01 121.92) (layer "F.SilkS") (tstamp f864ec46-1390-43ba-a798-dac0fca8c5a4)
+    (effects (font (size 1 1) (thickness 0.15)) (justify left bottom))
+  )
 
   (segment (start 153.035 90.805) (end 151.13 88.9) (width 0.25) (layer "F.Cu") (net 6) (tstamp 1579df75-3034-4663-baee-45ca40461002))
   (segment (start 151.13 88.9) (end 151.13 87.63) (width 0.25) (layer "F.Cu") (net 6) (tstamp 5da70709-84bd-41fa-bf18-0673c913cd41))
