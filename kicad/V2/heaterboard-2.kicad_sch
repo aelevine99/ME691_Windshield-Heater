@@ -1908,7 +1908,7 @@
     (property "Datasheet" "http://www.ti.com/lit/ds/symlink/lm317.pdf" (at 92.71 38.1 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Catalog No" "296-13869-5-ND" (at 92.71 38.1 0)
+    (property "Catalog No" "https://www.ti.com/lit/ds/symlink/lm117.pdf?HQS=dis-dk-null-digikeymode-dsf-pf-null-wwe&ts=1708276608887&ref_url=https%253A%252F%252Fwww.ti.com%252Fgeneral%252Fdocs%252Fsuppproductinfo.tsp%253FdistId%253D10%2526gotoUrl%253Dhttps%253A%252F%252Fwww.ti.com%252Flit%252Fgpn%252Flm117" (at 92.71 38.1 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Vendor" "Digikey" (at 92.71 38.1 0)
