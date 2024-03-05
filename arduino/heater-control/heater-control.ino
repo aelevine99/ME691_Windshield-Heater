@@ -4,65 +4,95 @@ HEATERBOARD CONTROL PROGRAM
 AL LEVINE & ZEWEI WU
 */
 
-//==================================================
+//====================================================================================================
 //LIBRARIES
-#include <Wire.h>   //i2c library
-#include <AHTxx.h>  //temp sensor library
+#include <Wire.h>             //i2c library
+#include "ArduinoLowPower.h"  //low power library
+#include <AHTxx.h>            //temp sensor library
 
 //PINS
-#define heatPwr D9  //mosfet control pin
-#define batt A6     //battery monitor pin
-#define relay A7    //relay control pin
-#define pinSDA A4   //i2c
-#define pinSCL A5   //i2c
-#define i2cTemp x   //i2c address of temp sensor, https://www.amazon.com/HiLetgo-Precision-Temperature-Humidity-2-0-5-5V/dp/B09KGW1G41
+#define heatPwr 9  //mosfet control pin
+#define batt A6    //battery monitor pin
+#define relay A7   //relay control pin
+#define pinSDA A4  //i2c
+#define pinSCL A5  //i2c
+#define i2cTemp x  //i2c address of temp sensor, https://www.amazon.com/HiLetgo-Precision-Temperature-Humidity-2-0-5-5V/dp/B09KGW1G41
 
 //VARS
-int tempMax 200;  //celsius, max safe temperature for heater
-int tempDes 50;   //celsius, desired operating temperature for heater
-int battMin 12;   //volts, minimum safe voltage for battery operation
-float ahtVal;     //store temp result
+int tempMax = 200;                          //celsius, max safe temperature for heater
+int tempDes = 50;                           //celsius, desired operating temperature for heater
+int battMin = 12;                           //volts, minimum safe voltage for battery operation
+float ahtVal;                               //store temp result
+unsigned long timerStart = 0;               //store time
+unsigned long timerMax = 15 * (60 * 1000);  //max time for heater, [min]*[s/min]*[ms/s]
 
 //Temp sensor setup
 AHTxx aht21(AHTXX_ADDRESS_X38, AHT2x_SENSOR);  //sensor address, sensor type
 
-//==================================================
+//====================================================================================================
 //SETUP
 void setup() {
+
+  pinMode(heatPwr, INPUT);
+  pinMode(batt, INPUT);
+  pinMode(relay, INPUT);
+
   Wire.begin();          //join i2c bus
   Serial.begin(115200);  //start serial for output
 
-  while (aht20.begin() != true) {                                                      //initialize temp sensor
+  while (aht21.begin() != true) {                                                      //initialize temp sensor
     Serial.println(F("AHT21 not connected or fail to load calibration coefficient"));  //(F()) save string to flash & keeps dynamic memory free
     delay(5000);
   }
   Serial.println(F("AHT21 OK"));
 }
 
-//==================================================
+//====================================================================================================
 //LOOP
 void loop() {
-  readTemp();
+  voltCheck(battMin);
+  if (timerMax <= timer(timerStart) || timerStart = 0) {
+    LowPower.sleep();
+  // to do: relay interrupt stuff (start timer, wake up), actual loop function
+  
+  }
 }
 
 //==================================================
 //FUNCTIONS
+void voltCheck(int vMin) {  //checks voltage of battery from 1/3 voltage divider
+  float vCur = analogRead(batt) * 3;
+  if (vCur <= vMin) {
+    Serial.println("Low voltage. Going to sleep.");
+    LowPower.sleep();
+  } else {
+    Serial.print("Voltage good. ");
+    Serial.print(vCur);
+    Serial.println(" volts.");
+  }
+}
+
+float timer(unsigned long start) {  //function to find time passed since start time
+  unsigned long startTime = start;
+  unsigned long curTime = millis();
+  return start - curTime;
+}
+
 float readTemp() {
   ahtVal = aht21.readTemperature();  //read 6-bytes via I2C, takes 80 milliseconds
-  if (ahtValue != AHTXX_ERROR) {     //AHTXX_ERROR = 255, library returns 255 if error occurs
-    Serial.print(ahtValue);
+  if (ahtVal != AHTXX_ERROR) {       //AHTXX_ERROR = 255, library returns 255 if error occurs
+    Serial.print(ahtVal);
     Serial.println(F(" +-0.3C"));
   } else {
-    printStatus();                                                      //print temperature command status
-    if (aht20.softReset() == true) Serial.println(F("reset success"));  //as the last chance to make it alive
+    printAhtStatus();                                                   //print temperature command status
+    if (aht21.softReset() == true) Serial.println(F("reset success"));  //as the last chance to make it alive
     else Serial.println(F("reset failed"));
   }
 }
 
-void printStatus() // Print last command status for aht21
+void printAhtStatus()  // Print last command status for aht21
 {
-  switch (aht20.getStatus())
-  {
+  switch (aht21.getStatus()) {
     case AHTXX_NO_ERROR:
       Serial.println(F("no error"));
       break;
@@ -84,7 +114,7 @@ void printStatus() // Print last command status for aht21
       break;
 
     default:
-      Serial.println(F("unknown status"));    
+      Serial.println(F("unknown status"));
       break;
   }
 }
