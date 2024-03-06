@@ -13,11 +13,10 @@ Designed for Arduino Nano 33 IOT
 #include <AHTxx.h>            //temp sensor library
 
 //PIN ASSIGNMENTS
-// pin tables at https://github.com/arduino/ArduinoCore-samd/blob/master/variants/nano_33_iot/variant.cpp
 const int pinHeat = 9;             //mosfet control pin
 const int pinBatt = A6;            //battery monitor pin
 const int pinRelay = A7;           //relay control pin
-const int pinRelayInterrupt = 21;  //interrupt pin number for relay
+const int pinRelayInterrupt = 21;  //interrupt pin number for relay, see https://github.com/arduino/ArduinoCore-samd/blob/master/variants/nano_33_iot/variant.cpp
 const int pinSDA = A4;             //i2c sda pin
 const int pinSCL = A5;             //i2c scl pin
 //#define i2cTemp x  //i2c address of temp sensor, https://www.amazon.com/HiLetgo-Precision-Temperature-Humidity-2-0-5-5V/dp/B09KGW1G41
