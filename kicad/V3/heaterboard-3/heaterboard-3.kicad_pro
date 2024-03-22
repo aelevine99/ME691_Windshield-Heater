@@ -428,7 +428,9 @@
   },
   "libraries": {
     "pinned_footprint_libs": [],
-    "pinned_symbol_libs": []
+    "pinned_symbol_libs": [
+      "Imported"
+    ]
   },
   "meta": {
     "filename": "heaterboard-3.kicad_pro",
