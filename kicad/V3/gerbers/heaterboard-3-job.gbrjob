@@ -3,15 +3,15 @@
     "GenerationSoftware": {
       "Vendor": "KiCad",
       "Application": "Pcbnew",
-      "Version": "7.0.10"
+      "Version": "8.0.1"
     },
-    "CreationDate": "2024-02-15T22:29:50-05:00"
+    "CreationDate": "2024-03-26T10:43:22-04:00"
   },
   "GeneralSpecs": {
     "ProjectId": {
-      "Name": "heaterboard-2",
-      "GUID": "68656174-6572-4626-9f61-72642d322e6b",
-      "Revision": "2"
+      "Name": "heaterboard-3",
+      "GUID": "68656174-6572-4626-9f61-72642d332e6b",
+      "Revision": "3"
     },
     "Size": {
       "X": 113.4,
@@ -40,57 +40,57 @@
   ],
   "FilesAttributes": [
     {
-      "Path": "heaterboard-2-F_Cu.gbr",
+      "Path": "heaterboard-3-F_Cu.gbr",
       "FileFunction": "Copper,L1,Top",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "heaterboard-2-In1_Cu.gbr",
+      "Path": "heaterboard-3-In1_Cu.gbr",
       "FileFunction": "Copper,L2,Inr",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "heaterboard-2-In2_Cu.gbr",
+      "Path": "heaterboard-3-In2_Cu.gbr",
       "FileFunction": "Copper,L3,Inr",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "heaterboard-2-B_Cu.gbr",
+      "Path": "heaterboard-3-B_Cu.gbr",
       "FileFunction": "Copper,L4,Bot",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "heaterboard-2-F_Paste.gbr",
+      "Path": "heaterboard-3-F_Paste.gbr",
       "FileFunction": "SolderPaste,Top",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "heaterboard-2-B_Paste.gbr",
+      "Path": "heaterboard-3-B_Paste.gbr",
       "FileFunction": "SolderPaste,Bot",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "heaterboard-2-F_Silkscreen.gbr",
+      "Path": "heaterboard-3-F_Silkscreen.gbr",
       "FileFunction": "Legend,Top",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "heaterboard-2-B_Silkscreen.gbr",
+      "Path": "heaterboard-3-B_Silkscreen.gbr",
       "FileFunction": "Legend,Bot",
       "FilePolarity": "Positive"
     },
     {
-      "Path": "heaterboard-2-F_Mask.gbr",
+      "Path": "heaterboard-3-F_Mask.gbr",
       "FileFunction": "SolderMask,Top",
       "FilePolarity": "Negative"
     },
     {
-      "Path": "heaterboard-2-B_Mask.gbr",
+      "Path": "heaterboard-3-B_Mask.gbr",
       "FileFunction": "SolderMask,Bot",
       "FilePolarity": "Negative"
     },
     {
-      "Path": "heaterboard-2-Edge_Cuts.gbr",
+      "Path": "heaterboard-3-Edge_Cuts.gbr",
       "FileFunction": "Profile",
       "FilePolarity": "Positive"
     }
