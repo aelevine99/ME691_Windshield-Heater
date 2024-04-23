@@ -9,49 +9,55 @@ Designed for Arduino Nano 33 IOT
 //====================================================================================================
 //LIBRARIES
 #include <Wire.h>             //i2c library
-#include "ArduinoLowPower.h"  //low power library
-#include <AHTxx.h>            //temp sensor library
+#include <ArduinoLowPower.h>  //low power library
+//#include <AHTxx.h>            //temp sensor library
 
 //PIN ASSIGNMENTS
+const int pinSDA = A4;             //i2c sda pin
+const int pinSCL = A5;             //i2c scl pin
 const int pinHeat = 9;             //mosfet control pin
 const int pinBatt = A6;            //battery monitor pin
 const int pinRelay = A7;           //relay control pin
 const int pinRelayInterrupt = 21;  //interrupt pin number for relay, see https://github.com/arduino/ArduinoCore-samd/blob/master/variants/nano_33_iot/variant.cpp
-const int pinSDA = A4;             //i2c sda pin
-const int pinSCL = A5;             //i2c scl pin
-//#define i2cTemp x  //i2c address of temp sensor, https://www.amazon.com/HiLetgo-Precision-Temperature-Humidity-2-0-5-5V/dp/B09KGW1G41
+const int pinSheetV = A2;          //sheet voltage
+const int pinSheetI = A1;          //sheet current
+const float tcr = -0.00055;        //temperature coefficient of resistance for ito film, (Ω/°C)
 
 //VARIABLE ASSIGNMENTS
 const float Kp = 1;
 const int tempMax = 200;                    //celsius, max safe temperature for heater
 const int tempDes = 50;                     //celsius, desired operating temperature for heater
-const int vMin = 12;                        //volts, minimum safe voltage for battery operation
 float tempCur = 0;                          //store temp result
+const int vMin = 12;                        //volts, minimum safe voltage for battery operation
+float sheetV = 0;                           //voltage across sheet
+float sheetI = 0;                           //current across sheet
+float sheetR = 0;                           //resistance across sheet
 unsigned long timeStart = 0;                //store time
 unsigned long timerMax = 15 * (60 * 1000);  //max time for heater, [min]*[s/min]*[ms/s]
 
 //Temp sensor setup
-AHTxx aht21(AHTXX_ADDRESS_X38, AHT2x_SENSOR);  //sensor address, sensor type
+//AHTxx aht21(AHTXX_ADDRESS_X38, AHT2x_SENSOR);  //sensor address, sensor type
 
 //====================================================================================================
 //SETUP
 void setup() {
-
   pinMode(pinHeat, INPUT);
   pinMode(pinBatt, INPUT);
   pinMode(pinRelay, INPUT);
+  pinMode(sheetV, INPUT);
+  pinMode(sheetI, INPUT);
 
   Wire.begin();          //join i2c bus
   Serial.begin(115200);  //start serial for output
   Serial.println("Serial begin");
 
-  while (aht21.begin() != true) {                                                      //initialize temp sensor
-    Serial.println(F("AHT21 not connected or fail to load calibration coefficient"));  //(F()) save string to flash & keeps dynamic memory free
-    delay(5000);
-  }
-  Serial.println(F("AHT21 OK"));
+  // while (aht21.begin() != true) {                                                      //initialize temp sensor
+  //   Serial.println(F("AHT21 not connected or fail to load calibration coefficient"));  //(F()) save string to flash & keeps dynamic memory free
+  //   delay(5000);
+  // }
+  // Serial.println(F("AHT21 OK"));
 
-  LowPower.attachInterruptWakeup(pinRelayInterrupt, callback, FALLING);  // attaches relay pin to wake board and run interrupt function
+  LowPower.attachInterruptWakeup(pinRelayInterrupt, callback, RISING);  // attaches relay pin to wake board and run interrupt function
 }
 
 //====================================================================================================
@@ -93,6 +99,12 @@ void voltCheck() {                       //checks voltage of battery from 1/3 vo
   }
 }
 
+void resCheck() {
+  sheetI = analogRead(pinSheetI) * 2;  //v_cc = v_iout * 2
+  sheetV = analogRead(pinSheetV) * 3;  // (3.32) / (3.32+6.65) voltage divider
+  sheetR = sheetV / sheetI;            // ohm's law V=IR
+}
+
 float timer(unsigned long start) {  //function to find time passed since start time
   unsigned long startTime = start;
   unsigned long curTime = millis();
@@ -100,43 +112,47 @@ float timer(unsigned long start) {  //function to find time passed since start t
 }
 
 float readTemp() {
-  float temp = aht21.readTemperature();  //read 6-bytes via I2C, takes 80 milliseconds
-  if (temp != AHTXX_ERROR) {             //AHTXX_ERROR = 255, library returns 255 if error occurs
-    Serial.print(temp);
-    Serial.println(F(" +-0.3C"));
-    return temp;  //return the temp value
-  } else {
-    printAhtStatus();                                                   //print temperature command status
-    if (aht21.softReset() == true) Serial.println(F("reset success"));  //as the last chance to make it alive
-    else Serial.println(F("reset failed"));
-  }
+  float Tcur = 20 + tcr * (sheetR - 4.8);  // res at room temp (20 °C) is 4.8 ohms
 }
 
-void printAhtStatus()  // Print last command status for aht21, from library documentation
-{
-  switch (aht21.getStatus()) {
-    case AHTXX_NO_ERROR:
-      Serial.println(F("no error"));
-      break;
+// float readTemp() {
+//   float temp = aht21.readTemperature();  //read 6-bytes via I2C, takes 80 milliseconds
+//   if (temp != AHTXX_ERROR) {             //AHTXX_ERROR = 255, library returns 255 if error occurs
+//     Serial.print(temp);
+//     Serial.println(F(" +-0.3C"));
+//     return temp;  //return the temp value
+//   } else {
+//     printAhtStatus();                                                   //print temperature command status
+//     if (aht21.softReset() == true) Serial.println(F("reset success"));  //as the last chance to make it alive
+//     else Serial.println(F("reset failed"));
+//   }
+//}
 
-    case AHTXX_BUSY_ERROR:
-      Serial.println(F("sensor busy, increase polling time"));
-      break;
+// void printAhtStatus()  // Print last command status for aht21, from library documentation
+// {
+//   switch (aht21.getStatus()) {
+//     case AHTXX_NO_ERROR:
+//       Serial.println(F("no error"));
+//       break;
 
-    case AHTXX_ACK_ERROR:
-      Serial.println(F("sensor didn't return ACK, not connected, broken, long wires (reduce speed), bus locked by slave (increase stretch limit)"));
-      break;
+//     case AHTXX_BUSY_ERROR:
+//       Serial.println(F("sensor busy, increase polling time"));
+//       break;
 
-    case AHTXX_DATA_ERROR:
-      Serial.println(F("received data smaller than expected, not connected, broken, long wires (reduce speed), bus locked by slave (increase stretch limit)"));
-      break;
+//     case AHTXX_ACK_ERROR:
+//       Serial.println(F("sensor didn't return ACK, not connected, broken, long wires (reduce speed), bus locked by slave (increase stretch limit)"));
+//       break;
 
-    case AHTXX_CRC8_ERROR:
-      Serial.println(F("computed CRC8 not match received CRC8, this feature supported only by AHT2x sensors"));
-      break;
+//     case AHTXX_DATA_ERROR:
+//       Serial.println(F("received data smaller than expected, not connected, broken, long wires (reduce speed), bus locked by slave (increase stretch limit)"));
+//       break;
 
-    default:
-      Serial.println(F("unknown status"));
-      break;
-  }
-}
+//     case AHTXX_CRC8_ERROR:
+//       Serial.println(F("computed CRC8 not match received CRC8, this feature supported only by AHT2x sensors"));
+//       break;
+
+//     default:
+//       Serial.println(F("unknown status"));
+//       break;
+//   }
+// }
