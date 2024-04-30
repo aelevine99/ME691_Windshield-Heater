@@ -21,19 +21,16 @@ const int pinRelay = A7;           //relay control pin
 const int pinRelayInterrupt = 21;  //interrupt pin number for relay, see https://github.com/arduino/ArduinoCore-samd/blob/master/variants/nano_33_iot/variant.cpp
 const int pinSheetV = A2;          //sheet voltage
 const int pinSheetI = A1;          //sheet current
-const float tcr = -0.00055;        //temperature coefficient of resistance for ito film, (Ω/°C)
+
 
 //VARIABLE ASSIGNMENTS
-const float Kp = 1;
-const int tempMax = 200;                    //celsius, max safe temperature for heater
-const int tempDes = 50;                     //celsius, desired operating temperature for heater
+const int tempMax = 50;                     //celsius, max safe temperature for heater
+const int tempMin = 20;                     //celsius, desired operating temperature for heater
 float tempCur = 0;                          //store temp result
+const float tcr = -0.00055;                 //temperature coefficient of resistance for ito film, (Ω/°C)
 const int vMin = 12;                        //volts, minimum safe voltage for battery operation
-float sheetV = 0;                           //voltage across sheet
-float sheetI = 0;                           //current across sheet
-float sheetR = 0;                           //resistance across sheet
 unsigned long timeStart = 0;                //store time
-unsigned long timerMax = 15 * (60 * 1000);  //max time for heater, [min]*[s/min]*[ms/s]
+unsigned long timerMax = 15 * (60 * 1000);  //max time for heater, [min]*[s/min]*[ms/s]=[min]
 
 //Temp sensor setup
 //AHTxx aht21(AHTXX_ADDRESS_X38, AHT2x_SENSOR);  //sensor address, sensor type
@@ -44,8 +41,8 @@ void setup() {
   pinMode(pinHeat, INPUT);
   pinMode(pinBatt, INPUT);
   pinMode(pinRelay, INPUT);
-  pinMode(sheetV, INPUT);
-  pinMode(sheetI, INPUT);
+  pinMode(pinSheetV, INPUT);
+  pinMode(pinSheetI, INPUT);
 
   Wire.begin();          //join i2c bus
   Serial.begin(115200);  //start serial for output
@@ -65,8 +62,9 @@ void setup() {
 void loop() {
   voltCheck();
   if (timer(timeStart) <= timerMax) {
-    pid();
+    thermostat();
   } else {
+    digitalWrite(LED_BUILTIN, LOW);
     LowPower.sleep();
   }
 }
@@ -76,33 +74,44 @@ void loop() {
 void callback() {  //interrupt function
   voltCheck();
   timeStart = millis();
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
-void pid() {
-  float tempCur = readTemp();     //read temperature from sensor
-  float err = tempDes - tempCur;  //find error between current and desired temp
-  Serial.print("Temp difference: ");
-  Serial.println(err);
-  float P = Kp * err + tempDes;                      //proportional control equation
-  analogWrite(pinHeat, map(P, 0, tempDes, 0, 255));  //map proportional control to pwm signal
+void thermostat() {
+  float tempCur = readTemp();  //read temperature from sensor
+  if (tempCur > tempMax) {
+    analogWrite(pinHeat, 0);
+  } else if (tempCur < tempMin) {
+    analogWrite(pinHeat, 255);
+  } else {
+    analogWrite(pinHeat, 100);
+  }
 }
 
 void voltCheck() {                       //checks voltage of battery from 1/3 voltage divider
   float vCur = analogRead(pinBatt) * 3;  // voltage reading from (1/3) divider
+  Serial.print("Input V: ");
+  Serial.println(vCur);
   if (vCur <= vMin) {
     Serial.println("Low voltage. Going to sleep.");
     LowPower.sleep();
-  } else {
-    Serial.print("Voltage good. ");
-    Serial.print(vCur);
-    Serial.println(" volts.");
-  }
+  };
 }
 
-void resCheck() {
-  sheetI = analogRead(pinSheetI) * 2;  //v_cc = v_iout * 2
-  sheetV = analogRead(pinSheetV) * 3;  // (3.32) / (3.32+6.65) voltage divider
-  sheetR = sheetV / sheetI;            // ohm's law V=IR
+float readTemp() {
+  float sheetI = analogRead(pinSheetI) * 2;  //v_cc = v_iout * 2
+  float sheetV = analogRead(pinSheetV) * 3;  // (3.32) / (3.32+6.65) voltage divider
+  float sheetR = sheetV / sheetI;            // ohm's law V=IR
+  float Tcur = 20 + tcr * (sheetR - 4.8);    // res at room temp (20 °C) is 4.8 ohms
+  Serial.print("V: ");
+  Serial.print(sheetV);
+  Serial.print("\t I: ");
+  Serial.print(sheetI);
+  Serial.print("\t R: ");
+  Serial.print(sheetR);
+  Serial.print("\t Temp: ");
+  Serial.println(Tcur);
+  return Tcur;
 }
 
 float timer(unsigned long start) {  //function to find time passed since start time
@@ -111,9 +120,6 @@ float timer(unsigned long start) {  //function to find time passed since start t
   return start - curTime;
 }
 
-float readTemp() {
-  float Tcur = 20 + tcr * (sheetR - 4.8);  // res at room temp (20 °C) is 4.8 ohms
-}
 
 // float readTemp() {
 //   float temp = aht21.readTemperature();  //read 6-bytes via I2C, takes 80 milliseconds
