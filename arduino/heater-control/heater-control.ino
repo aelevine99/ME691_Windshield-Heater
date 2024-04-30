@@ -22,15 +22,16 @@ const int pinRelayInterrupt = 21;  //interrupt pin number for relay, see https:/
 const int pinSheetV = A2;          //sheet voltage
 const int pinSheetI = A1;          //sheet current
 
-
 //VARIABLE ASSIGNMENTS
-const int tempMax = 50;                     //celsius, max safe temperature for heater
-const int tempMin = 20;                     //celsius, desired operating temperature for heater
-float tempCur = 0;                          //store temp result
-const float tcr = -0.00055;                 //temperature coefficient of resistance for ito film, (Ω/°C)
-const int vMin = 12;                        //volts, minimum safe voltage for battery operation
-unsigned long timeStart = 0;                //store time
-unsigned long timerMax = 15 * (60 * 1000);  //max time for heater, [min]*[s/min]*[ms/s]=[min]
+const int tempMax = 50;                      //celsius, max safe temperature for heater
+const int tempMin = 20;                      //celsius, desired operating temperature for heater
+float tempCur = 0;                           //store temp result
+const float tcr = -0.00055;                  //temperature coefficient of resistance for ito film, (Ω/°C)
+const int vMin = 12;                         //volts, minimum safe voltage for battery operation
+unsigned long timeStart = 0;                 //store time
+unsigned long timerMax = 0.5 * (60 * 1000);  //max time for heater, [min]*[s/min]*[ms/s]=[min]
+
+float vDiv = 0.1658;  // voltage divider value
 
 //Temp sensor setup
 //AHTxx aht21(AHTXX_ADDRESS_X38, AHT2x_SENSOR);  //sensor address, sensor type
@@ -44,8 +45,11 @@ void setup() {
   pinMode(pinSheetV, INPUT);
   pinMode(pinSheetI, INPUT);
 
-  Wire.begin();          //join i2c bus
-  Serial.begin(115200);  //start serial for output
+  Wire.begin();        //join i2c bus
+  Serial.begin(9600);  //start serial for output
+  while (!Serial) {
+    ;  // wait for serial port to connect. Needed for native USB port only
+  }
   Serial.println("Serial begin");
 
   // while (aht21.begin() != true) {                                                      //initialize temp sensor
@@ -55,6 +59,8 @@ void setup() {
   // Serial.println(F("AHT21 OK"));
 
   LowPower.attachInterruptWakeup(pinRelayInterrupt, callback, RISING);  // attaches relay pin to wake board and run interrupt function
+
+  timeStart = millis();
 }
 
 //====================================================================================================
@@ -65,7 +71,7 @@ void loop() {
     thermostat();
   } else {
     digitalWrite(LED_BUILTIN, LOW);
-    LowPower.sleep();
+    //LowPower.sleep();
   }
 }
 
@@ -88,21 +94,20 @@ void thermostat() {
   }
 }
 
-void voltCheck() {                       //checks voltage of battery from 1/3 voltage divider
-  float vCur = analogRead(pinBatt) * 3;  // voltage reading from (1/3) divider
+void voltCheck() {                   //checks voltage of battery from voltage divider
+  float vCur = analogRead(pinBatt)/vDiv ;  // voltage reading from divider
   Serial.print("Input V: ");
   Serial.println(vCur);
-  if (vCur <= vMin) {
-    Serial.println("Low voltage. Going to sleep.");
-    LowPower.sleep();
-  };
+  //if (vCur <= vMin) {
+  //Serial.println("Low voltage. Going to sleep.");
+  //LowPower.sleep();
 }
 
 float readTemp() {
-  float sheetI = analogRead(pinSheetI) * 2;  //v_cc = v_iout * 2
-  float sheetV = analogRead(pinSheetV) * 3;  // (3.32) / (3.32+6.65) voltage divider
-  float sheetR = sheetV / sheetI;            // ohm's law V=IR
-  float Tcur = 20 + tcr * (sheetR - 4.8);    // res at room temp (20 °C) is 4.8 ohms
+  float sheetI = analogRead(pinSheetI);    //v_cc = v_iout * 2
+  float sheetV = analogRead(pinSheetV);    // (3.32) / (3.32+6.65) voltage divider
+  float sheetR = sheetV / sheetI;          // ohm's law V=IR
+  float Tcur = 20 + tcr * (sheetR - 4.8);  // res at room temp (20 °C) is 4.8 ohms
   Serial.print("V: ");
   Serial.print(sheetV);
   Serial.print("\t I: ");
