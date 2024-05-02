@@ -5014,7 +5014,7 @@
 	)
 	(text "Wikipedia - LM317"
 		(exclude_from_sim no)
-		(at 12.7 195.58 0)
+		(at 0.762 228.854 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5059,7 +5059,7 @@
 	)
 	(text "Amazon - RF control module\n"
 		(exclude_from_sim no)
-		(at 12.7 203.2 0)
+		(at 0.762 236.474 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5093,7 +5093,7 @@
 	)
 	(text "Amazon - Temp module\n"
 		(exclude_from_sim no)
-		(at 12.7 200.66 0)
+		(at 0.762 233.934 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5116,7 +5116,7 @@
 	)
 	(text "LM317 Calculator"
 		(exclude_from_sim no)
-		(at 12.7 198.12 0)
+		(at 0.762 231.394 0)
 		(effects
 			(font
 				(size 1.27 1.27)
