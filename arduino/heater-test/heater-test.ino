@@ -33,7 +33,7 @@ unsigned long timerMax = 0.5 * (60 * 1000);  // max time for heater, [min]*[s/mi
 
 float vDiv = 0.1658;  // voltage divider value
 
-bool running = false;
+volatile bool running = false;
 
 //Temp sensor setup
 //AHTxx aht21(AHTXX_ADDRESS_X38, AHT2x_SENSOR);  //sensor address, sensor type
@@ -62,7 +62,10 @@ void setup() {
 //====================================================================================================
 //LOOP
 void loop() {
+  Serial.println(running);
+  voltCheck();
   thermostat();
+  delay(1000);
 }
 
 //==================================================
@@ -71,19 +74,30 @@ void callback() {  //interrupt function
   Serial.println("remote button registered");
   if (running == false) {
     Serial.println("Heater ON");
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(13, HIGH);
     running = true;
-  }
-  else
+  } else {
     Serial.println("Heater OFF");
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(13, LOW);
     running = false;
+  }
 }
 
 void thermostat() {
   if (running == true) {
-    analogWrite(pinHeat, 200);
+    digitalWrite(pinHeat, HIGH);
   } else {
-    analogWrite(pinHeat, 0);
+    digitalWrite(pinHeat, LOW);
+  }
+}
+
+void voltCheck() {
+  int a = analogRead(pinBatt);          // checks voltage of battery from voltage divider
+  float vCur = a / 1023. * 3.3 / vDiv;  // voltage reading from divider
+  Serial.print("Input V: ");
+  Serial.println(vCur);
+  if (vCur <= vMin) {
+    Serial.println("Low voltage. Going to sleep.");
+    //LowPower.sleep();
   }
 }
